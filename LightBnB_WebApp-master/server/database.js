@@ -92,6 +92,24 @@ const getAllReservations = function(guest_id, limit = 10) {
 }
 exports.getAllReservations = getAllReservations;
 
+const addReservation = function(reservation, guest_id){
+  let query = `
+  INSERT INTO reservations (start_date, end_date, property_id, guest_id)
+  VALUES($1, $2, $3, $4) 
+  RETURNING *;`;
+  const s = new Date(reservation.start_date);
+  const e = new Date(reservation.end_date);
+  let args = [s, e, Number(reservation.property_id), guest_id];
+  return pool.query(query, args)
+    .then(response => {
+      return response.rows[0];
+    })
+    .catch( err => {
+      console.log(err.message);
+    })
+}
+exports.addReservation = addReservation;
+
 /// Properties
 
 /**
