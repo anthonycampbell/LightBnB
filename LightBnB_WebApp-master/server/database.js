@@ -125,28 +125,34 @@ const getAllProperties = function(options, limit = 10) {
   FROM properties
   JOIN property_reviews ON properties.id = property_reviews.property_id
   `;
+  let qOptions = [];
   if (options.city){
     args.push(`%${options.city}%`);
-    query += `WHERE properties.city LIKE $${args.length}`;
-  }
-  if (options.owner_id){
-    args.push(`${options.owner_id}`);
-    query += ` AND properties.owner_id=$${args.length}`;
+    qOptions.push(`properties.city LIKE $${args.length}`);
   }
   if (options.minimum_price_per_night){
     args.push(`${options.minimum_price_per_night*100}`);
-    query += ` AND properties.cost_per_night >= $${args.length}`;
+    qOptions.push(`properties.cost_per_night >= $${args.length}`);
   }
   if (options.maximum_price_per_night){
     args.push(`${options.maximum_price_per_night*100}`);
-    query += ` AND properties.cost_per_night <= $${args.length}`;
+    qOptions.push(`properties.cost_per_night <= $${args.length}`);
   }
-
-  query += ` GROUP BY properties.id`
-
+  for (let i = 0; i < qOptions.length; i++){
+    if (i === 0){
+      query += `WHERE `;
+    }
+    query += qOptions[i];
+    if (i < qOptions.length - 1){
+      query += ' AND ';
+    }
+  }
+  query += `
+  GROUP BY properties.id`
   if (options.minimum_rating){
     args.push(`${options.minimum_rating}`);
-    query += ` HAVING AVG(property_reviews.rating) >= $${args.length}`;
+    query += `
+    HAVING AVG(property_reviews.rating) >= $${args.length}`;
   }
   args.push(limit);
   query += `
