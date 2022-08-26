@@ -1,12 +1,6 @@
 const properties = require('./json/properties.json');
 const users = require('./json/users.json');
-const { Pool } = require('pg');
-const pool = new Pool({
-  user: 'vagrant',
-  password: '123', 
-  host: 'localhost',
-  database: 'lightbnb'
-});
+const db = require('./db.js');
 
 /// Users
 
@@ -18,13 +12,7 @@ const pool = new Pool({
 const getUserWithEmail = function(email) {
   const query = `SELECT * FROM users WHERE email=$1;`
   const args = [email];
-  return pool.query(query, args)
-    .then(response => {
-      return response.rows[0];
-    })
-    .catch(err => {
-      console.log(err.message);
-    });
+  return db.query(query, args);
 }
 exports.getUserWithEmail = getUserWithEmail;
 
@@ -36,13 +24,7 @@ exports.getUserWithEmail = getUserWithEmail;
 const getUserWithId = function(id) {
   const query = `SELECT * FROM users WHERE id=$1;`
   const args = [id];
-  return pool.query(query, args)
-    .then(response => {
-      return response.rows[0];
-    })
-    .catch(err => {
-      console.log(err.message);
-    });
+  return db.query(query, args);
 }
 exports.getUserWithId = getUserWithId;
 
@@ -55,13 +37,7 @@ exports.getUserWithId = getUserWithId;
 const addUser =  function(user) {
   const query = `INSERT INTO users (name, email, password) VALUES($1, $2, $3) RETURNING *`
   const args = [user.name, user.email, user.password];
-  return pool.query(query, args)
-    .then(response => {
-      return response.rows[0];
-    })
-    .catch(err => {
-      console.log(err.message);
-    })
+  return db.query(query, args);
 }
 exports.addUser = addUser;
 
@@ -82,13 +58,7 @@ const getAllReservations = function(guest_id, limit = 10) {
   LIMIT $2
   `;
   const args = [guest_id, limit];
-  return pool.query(query, args)
-  .then(response => {
-    return response.rows;
-  })
-  .catch(err => {
-    console.log(err.message);
-  })
+  return db.query(query, args);
 }
 exports.getAllReservations = getAllReservations;
 
@@ -100,13 +70,7 @@ const addReservation = function(reservation, guest_id){
   const s = new Date(reservation.start_date);
   const e = new Date(reservation.end_date);
   let args = [s, e, Number(reservation.property_id), guest_id];
-  return pool.query(query, args)
-    .then(response => {
-      return response.rows[0];
-    })
-    .catch( err => {
-      console.log(err.message);
-    })
+  return db.query(query, args);
 }
 exports.addReservation = addReservation;
 
@@ -159,13 +123,7 @@ const getAllProperties = function(options, limit = 10) {
   ORDER BY properties.cost_per_night
   LIMIT $${args.length};
   `
-  return pool.query(query, args)
-    .then(response => {
-      return response.rows;
-    })
-    .catch(err => {
-      console.log(err.message);
-    });
+  return db.query(query, args);
 }
 exports.getAllProperties = getAllProperties;
 
@@ -218,12 +176,6 @@ const addProperty = function(property) {
     }
     query += ` $${i+1},`;
   }
-  return pool.query(query, args)
-    .then(response => {
-      return response.rows[0];
-    })
-    .catch(err => {
-      console.log(err.message);
-    })
+  return db.query(query, args);
 }
 exports.addProperty = addProperty;
